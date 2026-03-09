@@ -16,9 +16,19 @@ async function main() {
   
   await prisma.admin.upsert({
     where: { email: 'admin@mediasoft.com' },
-    update: {},
+    update: { password: hashedPassword },
     create: {
       email: 'admin@mediasoft.com',
+      password: hashedPassword,
+      name: 'Admin',
+    },
+  });
+
+  await prisma.admin.upsert({
+    where: { email: 'admin@mediasoftbd.com' },
+    update: { password: hashedPassword },
+    create: {
+      email: 'admin@mediasoftbd.com',
       password: hashedPassword,
       name: 'Admin',
     },
