@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Admin {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String   @default("Admin")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("admins")
+}
+
+model Contact {
+  id          Int       @id @default(autoincrement())
+  name        String
+  phoneNumber String    @map("phone_number")
+  tag         String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  messages    Message[]
+
+  @@map("contacts")
+}
+
+model Message {
+  id                Int      @id @default(autoincrement())
+  contactId         Int      @map("contact_id")
+  message           String   @db.Text
+  status            String   @default("pending")
+  whatsappMessageId String?  @map("whatsapp_message_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model Settings {
+  id                       Int      @id @default(autoincrement())
+  whatsappPhoneNumberId    String?  @map("whatsapp_phone_number_id")
+  whatsappBusinessAccountId String? @map("whatsapp_business_account_id")
+  metaAppId                String?  @map("meta_app_id")
+  metaAppSecret            String?  @map("meta_app_secret")
+  permanentAccessToken     String?  @map("permanent_access_token") @db.Text
+  webhookVerifyToken       String?  @map("webhook_verify_token")
+  updatedAt                DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}
