@@ -47,11 +47,28 @@ export async function POST(request: Request) {
           for (const status of statuses) {
             const whatsappMessageId = status.id;
             const messageStatus = status.status; // sent, delivered, read, failed
+            const errorInfo = status.errors?.[0];
+
+            // Log status updates for debugging
+            console.log('WhatsApp status update:', {
+              messageId: whatsappMessageId,
+              status: messageStatus,
+              ...(errorInfo && {
+                errorCode: errorInfo.code,
+                errorTitle: errorInfo.title,
+                errorMessage: errorInfo.message,
+              }),
+            });
 
             // Update message status in database
+            const updateData: Record<string, unknown> = { status: messageStatus };
+            if (messageStatus === 'failed' && errorInfo) {
+              updateData.errorMessage = `[${errorInfo.code}] ${errorInfo.title}: ${errorInfo.message || 'No details'}`;
+            }
+
             await prisma.message.updateMany({
               where: { whatsappMessageId },
-              data: { status: messageStatus },
+              data: updateData,
             });
           }
         }

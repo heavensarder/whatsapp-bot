@@ -52,9 +52,15 @@ export async function sendWhatsAppMessage(
     const data = await response.json();
 
     if (!response.ok) {
+      console.error('WhatsApp API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: data.error,
+        to: to,
+      });
       return {
         success: false,
-        error: data.error?.message || 'Failed to send message',
+        error: data.error?.message || `API error ${response.status}: ${response.statusText}`,
       };
     }
 

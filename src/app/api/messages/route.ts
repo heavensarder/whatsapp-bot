@@ -93,8 +93,17 @@ export async function POST(request: Request) {
         data: {
           status: result.success ? 'sent' : 'failed',
           whatsappMessageId: result.messageId || null,
+          errorMessage: result.error || null,
         },
       });
+
+      if (!result.success) {
+        console.error('Message send failed:', {
+          contactId: contacts[0].id,
+          phone: contacts[0].phoneNumber,
+          error: result.error,
+        });
+      }
 
       return NextResponse.json({
         results: [{
@@ -112,15 +121,22 @@ export async function POST(request: Request) {
 
       // Update message records
       await Promise.all(
-        results.map((r, index) =>
-          prisma.message.update({
+        results.map((r, index) => {
+          if (!r.result.success) {
+            console.error('Bulk message send failed:', {
+              contactId: r.contactId,
+              error: r.result.error,
+            });
+          }
+          return prisma.message.update({
             where: { id: messageRecords[index].id },
             data: {
               status: r.result.success ? 'sent' : 'failed',
               whatsappMessageId: r.result.messageId || null,
+              errorMessage: r.result.error || null,
             },
-          })
-        )
+          });
+        })
       );
 
       return NextResponse.json({
